@@ -2,10 +2,10 @@ import pygame
 import pygame_gui
 
 from labyrinth import Labyrinth
-from game import GameLv1
+from game import Game
 from utils import terminate, show_message
 from constants import MENU_SIZE, WINDOW_SIZE, SONG_END, GAME_EVENT_TYPE, PACMAN_EVENT
-from characters import Pacman, Red
+from characters import Pacman, Red, Blue, Pink, Orange
 
 def load_menu():
     pygame.init()
@@ -36,7 +36,7 @@ def load_menu():
                 level_text = event.ui_element.text.replace("LEVEL ", "")
                 try:
                     level = int(level_text)
-                    switch_level(level)
+                    start_game(level)
                     running = False
                 except ValueError:
                     print("Lỗi: Không thể chuyển level")
@@ -47,28 +47,31 @@ def load_menu():
         pygame.display.flip()
     pygame.quit()
 
-def switch_level(level):
-    levels = {
-        1: level1,
-        2: level2,
-        3: level3,
-        4: level4,
-        5: level5,
-        6: level6,
-        7: level7
-    }
-    levels.get(level, lambda: print("Level không hợp lệ"))()
 
-def level1():
+def start_game(mode):
     pygame.init()
-    pygame.display.set_caption('Pacman Level 1')
+    pygame.display.set_caption(f'Pacman Level {mode}')
     screen = pygame.display.set_mode(WINDOW_SIZE)
     manager = pygame_gui.UIManager(WINDOW_SIZE)
 
     labyrinth = Labyrinth(map, [0, 2], 2)
     pacman = Pacman((9,19))
     red = Red((21,18))
-    game = GameLv1(labyrinth, pacman, red)
+    blue = Blue((21,16))
+    orange = Orange((11,12))
+    pink = Pink((13,18))
+
+    ghost = []
+    if(mode == 1 or mode == 5 or mode == 6):
+        ghost.append(blue)
+    if(mode == 2 or mode == 5 or mode == 6):
+        ghost.append(pink)
+    if(mode == 3 or mode == 5 or mode == 6):
+        ghost.append(orange)
+    if(mode == 4 or mode == 5 or mode == 6):
+        ghost.append(red)
+
+    game = Game(labyrinth, pacman, ghost)
 
     clock = pygame.time.Clock()
     running = True
@@ -87,7 +90,7 @@ def level1():
                 pygame.mixer.music.load('sounds/siren.wav')
                 pygame.mixer.music.play(-1)
             elif event.type == GAME_EVENT_TYPE and not game_over and game_start:
-                game.move_red()
+                game.move_ghosts()
 
             elif event.type == PACMAN_EVENT and not game_over and game_start:
                 game.update_direct_pacman()
@@ -113,88 +116,3 @@ def level1():
             #   #  lose.play(0)
             #     sound_not_played2 = False
         pygame.display.flip()
-
-
-def level2():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 2')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((0, 255, 0))  # Màn hình màu xanh lá
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-def level3():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 3')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((0, 0, 255))  # Màn hình màu xanh dương
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-def level4():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 4')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((255, 255, 0))  # Màn hình màu vàng
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-def level5():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 5')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((255, 0, 255))  # Màn hình màu tím
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-def level6():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 6')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((0, 255, 255))  # Màn hình màu cyan
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-def level7():
-    pygame.init()
-    pygame.display.set_caption('Pacman Level 7')
-    screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((255, 165, 0))  # Màn hình màu cam
-    pygame.display.flip()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
