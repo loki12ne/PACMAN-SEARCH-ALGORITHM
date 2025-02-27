@@ -1,14 +1,14 @@
 import pygame
 import sys
 
-# def find_direction(start, target):
-#     x, y = start
-#     xn, yn = target
-#     if xn - x == 1: return 'right'
-#     if xn - x == -1: return 'left'
-#     if yn - y == 1: return 'down'
-#     if yn - y == -1: return 'up'
-#     return None
+def find_direction(start, target):
+    x, y = start
+    xn, yn = target
+    if xn - x == 1: return 'right'
+    if xn - x == -1: return 'left'
+    if yn - y == 1: return 'down'
+    if yn - y == -1: return 'up'
+    return None
 
 def show_message(screen, message1, message2):
     font = pygame.font.Font(None, 50)

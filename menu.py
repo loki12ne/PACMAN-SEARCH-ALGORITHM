@@ -1,7 +1,11 @@
 import pygame
 import pygame_gui
+
+from labyrinth import Labyrinth
+from game import GameLv1
 from utils import terminate, show_message
-from constants import MENU_SIZE, WINDOW_SIZE
+from constants import MENU_SIZE, WINDOW_SIZE, SONG_END, GAME_EVENT_TYPE, PACMAN_EVENT
+from characters import Pacman, Red
 
 def load_menu():
     pygame.init()
@@ -59,14 +63,56 @@ def level1():
     pygame.init()
     pygame.display.set_caption('Pacman Level 1')
     screen = pygame.display.set_mode(WINDOW_SIZE)
-    screen.fill((255, 0, 0))  # Màn hình màu đỏ
-    pygame.display.flip()
+    manager = pygame_gui.UIManager(WINDOW_SIZE)
 
+    labyrinth = Labyrinth(map, [0, 2], 2)
+    pacman = Pacman((9,19))
+    red = Red((21,18))
+    game = GameLv1(labyrinth, pacman, red)
+
+    clock = pygame.time.Clock()
     running = True
+    game_over = False
+    game_start = False
+    game_start_time = pygame.time.get_ticks() + 500
     while running:
+        current_time = pygame.time.get_ticks()
+        time_delta = clock.tick(60) / 1000.0
+        if current_time > game_start_time:
+            game_start = True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                terminate()
+            elif event.type == SONG_END:
+                pygame.mixer.music.load('sounds/siren.wav')
+                pygame.mixer.music.play(-1)
+            elif event.type == GAME_EVENT_TYPE and not game_over and game_start:
+                game.move_red()
+
+            elif event.type == PACMAN_EVENT and not game_over and game_start:
+                game.update_direct_pacman()
+
+            manager.process_events(event)
+        game.direct_pacman()
+        screen.fill((0, 0, 0))
+        game.render(screen)
+        manager.update(time_delta)
+        manager.draw_ui(screen)
+        if game.check_win():
+            game_over = True
+            break
+            pygame.mixer.music.pause()
+            # if sound_not_played1:
+            #   #  victory.play(0)
+            #     sound_not_played1 = False
+        if game.check_lose():
+            game_over = True
+            break
+            pygame.mixer.music.pause()
+            # if sound_not_played2:
+            #   #  lose.play(0)
+            #     sound_not_played2 = False
+        pygame.display.flip()
 
 
 def level2():
