@@ -50,25 +50,35 @@ class Labyrinth:
     def _is_valid(self, pos):
         x, y = pos
         return (0 <= x < self.width and 0 <= y < self.height and self.is_free(pos))
-    def dfs(self, start, target, direction):
-            stack = [(start, [start])]  
+
+    def ids(self, start, target, direction):
+        def ids_depth_limited(current, target, depth, path, visited):
+            if len(path) > depth:  # Vượt quá độ sâu cho phép
+                return None
+            if current == target:
+                return path  # Tìm thấy mục tiêu
+            
+            x, y = current
+            directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # up, down, left, right
+            
+            for dx, dy in directions:
+                next_pos = (x + dx, y + dy)
+                if (next_pos not in visited and self._is_valid(next_pos)):
+                    visited.add(next_pos)
+                    result = ids_depth_limited(next_pos, target, depth, path + [next_pos], visited)
+                    if result:
+                        return result
+            return None
+
+        max_depth = self.width * self.height  # Giới hạn tối đa là kích thước mê cung
+        for depth in range(1, max_depth + 1):
             visited = {start}
-            
-            while stack:
-                current, path = stack.pop()  
-                if current == target:
-                    return path[1] if len(path) > 1 else start
-                
-                x, y = current
-                directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-                
-                for dx, dy in directions:
-                    next_pos = (x + dx, y + dy)
-                    if (next_pos not in visited and self._is_valid(next_pos)):
-                        visited.add(next_pos)
-                        stack.append((next_pos, path + [next_pos]))
-            
-            return start
+            path = [start]
+            result = ids_depth_limited(start, target, depth, path, visited)
+            if result:
+                return result[1] if len(result) > 1 else start  # Trả về bước tiếp theo
+        
+        return start  # Không tìm thấy đường, đứng yên
     
     def ucs(self, start, target, direction):
             queue = [(0, start, [start])]  # (cost, position, path)

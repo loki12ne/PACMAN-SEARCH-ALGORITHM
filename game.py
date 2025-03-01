@@ -52,7 +52,7 @@ class Game:
             if(ghost_type == Blue):
                 next_position = self.labyrinth.bfs(start, target, ghost.get_direction())
             if(ghost_type == Pink):
-                next_position = self.labyrinth.dfs(start, target, ghost.get_direction())
+                next_position = self.labyrinth.ids(start, target, ghost.get_direction())
             if(ghost_type == Orange):
                 next_position = self.labyrinth.ucs(start, target, ghost.get_direction())
             if(ghost_type == Red):
@@ -60,6 +60,7 @@ class Game:
             ghost.set_direction(find_direction(ghost.get_position(), next_position))
             ghost.set_position(next_position)
             ghost.update_image()
+        self.pacman.update_image()
 
     def check_win(self):
         return not self.check_lose() and self.labyrinth.get_tile_id(self.pacman.get_position()) == self.labyrinth.finish_tile

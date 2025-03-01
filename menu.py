@@ -40,7 +40,6 @@ def load_menu():
                     running = False
                 except ValueError:
                     print("Lỗi: Không thể chuyển level")
-
             manager.process_events(event)
         manager.update(time_delta)
         manager.draw_ui(screen)
