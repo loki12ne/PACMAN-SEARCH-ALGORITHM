@@ -60,6 +60,7 @@ def start_game(mode):
     orange = Orange((11,12))
     pink = Pink((13,18))
 
+    point = [(2,3),(4,8),(6,9)]
     ghost = []
     if(mode == 1 or mode == 5 or mode == 6):
         ghost.append(blue)
@@ -70,7 +71,7 @@ def start_game(mode):
     if(mode == 4 or mode == 5 or mode == 6):
         ghost.append(red)
 
-    game = Game(labyrinth, pacman, ghost)
+    game = Game(labyrinth, pacman, ghost, point)
 
     clock = pygame.time.Clock()
     running = True

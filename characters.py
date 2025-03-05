@@ -163,3 +163,16 @@ class Orange:
     def render(self, screen):
         delta = (self.image1.get_width() - TILE_SIZE) // 2
         screen.blit(self.image1, (self.x * TILE_SIZE - delta, self.y * TILE_SIZE - delta))
+
+class Point:
+    def __init__(self, position):
+        self.x, self.y = position
+        self.eaten = False 
+
+    def get_position(self):
+        return (self.x, self.y)
+
+    def render(self, screen):
+        if not self.eaten:
+            center = (self.x * 24 + 12, self.y * 24 + 12) 
+            pygame.draw.circle(screen, (255, 255, 0), center, 4)
