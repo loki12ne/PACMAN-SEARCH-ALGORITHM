@@ -23,6 +23,8 @@ class Labyrinth:
                                    self.tile_size, self.tile_size)
                 screen.fill(colors[self.get_tile_id((x, y))], rect)
 
+
+
     def get_tile_id(self, position):
         return self.map[position[1]][position[0]]
 
@@ -51,45 +53,6 @@ class Labyrinth:
         x, y = pos
         return (0 <= x < self.width and 0 <= y < self.height and self.is_free(pos))
 
-    # def ids(self, start, target, direction):
-    #     def ids_depth_limited(current, target, depth, path, visited):
-    #         if len(path) > depth:  # Vượt quá độ sâu cho phép
-    #             return None
-    #         if current == target:
-    #             return path  # Tìm thấy mục tiêu
-            
-    #         x, y = current
-    #         directions = [(0, -1), (0, 1), (-1, 0), (1, 0) ]  # up, down, left, right
-    #             # Loại bỏ direction khỏi base_directions nếu nó đã có, rồi đặt nó lên đầu
-    #         if direction == 'up':
-    #             directions = [(0, -1),(1, 0) , (0, 1), (-1, 0) ]
-    #         elif direction == 'down':
-    #             directions = [(0, 1),(1, 0), (0, -1), (-1, 0) ]
-    #         elif direction == 'left':
-    #             directions = [(-1, 0), (0, -1),  (1, 0), (0, 1)]
-    #         else:
-    #             directions = [(1, 0) ,(0, -1), (-1, 0), (0, 1)  ]
-
-
-    #         for dx, dy in directions:
-    #             next_pos = (x + dx, y + dy)
-    #             if (next_pos not in visited and self._is_valid(next_pos)):
-    #                 visited.add(next_pos)
-    #                 result = ids_depth_limited(next_pos, target, depth, path + [next_pos], visited)
-    #                 if result:
-    #                     return result
-    #         return None
-
-    #     max_depth = self.width * self.height  
-    #     for depth in range(1, max_depth + 1):
-    #         visited = {start}
-    #         path = [start]
-    #         result = ids_depth_limited(start, target, depth, path, visited)
-    #         if result:
-    #             next_steps = result[1:5] if len(result) > 1 else [start]
-    #             return next_steps if len(next_steps) > 0 else [start]
-        
-    #     return start  # Không tìm thấy đường, đứng yên
     def ids(self, start, target, length_path):
         def ids_depth_limited(current, target, depth, path, visited):
 

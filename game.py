@@ -2,19 +2,27 @@ import pygame
 import math
 from utils import find_direction
 
-from characters import Pacman, Red, Pink, Blue, Orange, Point
-
-
+from characters import Pacman, Red, Pink, Blue, Orange, Point, Score
 
 class Game:
     def __init__(self, labyrinth, pacman, ghosts, points_positions=None):
             self.labyrinth = labyrinth
             self.pacman = pacman
             self.ghosts = ghosts
-            self.score = 0
+            self.score = Score()
+            points_positions = self.get_points_positions()
             self.points = [Point(pos) for pos in points_positions] if points_positions else []
             self.pink_next_moves = []  # Khai báo như thuộc tính của lớp
-        
+    def get_points_positions(self):
+        points = []  
+        with open("maps/point.txt", 'r') as file:
+            # Đọc từng dòng trong file
+            for line in file:
+                # Tách dòng thành hai số, chuyển thành int
+                x, y = map(int, line.split())
+                points.append((x, y))  # Thêm cặp (x, y) vào danh sách
+
+        return points
     def render(self, screen):
         self.labyrinth.render(screen)
         self.pacman.render(screen)
@@ -22,6 +30,7 @@ class Game:
             ghost.render(screen)
         for point in self.points:
             point.render(screen)
+        self.score.render(screen)
 
     def direct_pacman(self):
         if pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
@@ -56,7 +65,7 @@ class Game:
         for point in self.points:
                 if not point.eaten and point.get_position() == pacman_pos:
                     point.eaten = True
-                    self.score += 10
+                    self.score.increase(10)
 
 
 
@@ -78,7 +87,6 @@ class Game:
             elif ghost_type == Pink:
                 if len(self.pink_next_moves) == 0:
                     self.pink_next_moves = self.labyrinth.ids(start, target, self.distance(self.pacman, ghost))
-                print("Pink Ghost Next Moves:", self.pink_next_moves, " with len: ", len(self.pink_next_moves))
                 next_position = self.pink_next_moves.pop(0)
             elif ghost_type == Orange:
                 next_position = self.labyrinth.ucs(start, target)
