@@ -37,7 +37,7 @@ def load_menu():
                 try:
                     level = int(level_text)
                     start_game(level)
-                    running = False
+                    # Không đặt running = False ở đây để quay lại menu sau khi chơi xong
                 except ValueError:
                     print("Lỗi: Không thể chuyển level")
             manager.process_events(event)
@@ -45,7 +45,6 @@ def load_menu():
         manager.draw_ui(screen)
         pygame.display.flip()
     pygame.quit()
-
 
 def start_game(mode):
     pygame.init()
@@ -62,22 +61,24 @@ def start_game(mode):
 
     point = [(2,3),(4,8),(6,9)]
     ghost = []
-    if(mode == 1 or mode == 5 or mode == 6):
+
+    if mode == 1 or mode == 5 or mode == 6:
         ghost.append(blue)
-    if(mode == 2 or mode == 5 or mode == 6):
+    if mode == 2 or mode == 5 or mode == 6:
         ghost.append(pink)
-    if(mode == 3 or mode == 5 or mode == 6):
+    if mode == 3 or mode == 5 or mode == 6:
         ghost.append(orange)
-    if(mode == 4 or mode == 5 or mode == 6):
+    if mode == 4 or mode == 5 or mode == 6:
         ghost.append(red)
 
-    game = Game(labyrinth, pacman, ghost, point)
+    game = Game(labyrinth, pacman, ghost, point)  # Khởi tạo
 
     clock = pygame.time.Clock()
     running = True
     game_over = False
     game_start = False
     game_start_time = pygame.time.get_ticks() + 500
+    
     while running:
         current_time = pygame.time.get_ticks()
         time_delta = clock.tick(60) / 1000.0
@@ -91,28 +92,30 @@ def start_game(mode):
                 pygame.mixer.music.play(-1)
             elif event.type == GAME_EVENT_TYPE and not game_over and game_start:
                 game.move_ghosts()
-
             elif event.type == PACMAN_EVENT and not game_over and game_start:
                 game.update_direct_pacman()
-
             manager.process_events(event)
+        
         game.direct_pacman()
         screen.fill((0, 0, 0))
         game.render(screen)
         manager.update(time_delta)
         manager.draw_ui(screen)
+        
         if game.check_win():
-            game_over = True
-            break
-            pygame.mixer.music.pause()
-            # if sound_not_played1:
-            #   #  victory.play(0)
-            #     sound_not_played1 = False
+            show_message(screen, "You Win!", (0, 255, 0))  # Hiển thị thông báo thắng
+            pygame.display.flip()
+            pygame.time.wait(2000)  # Chờ 2 giây
+            running = False  # Thoát vòng lặp để quay lại menu
+        
         if game.check_lose():
-            game_over = True
-            break
+            show_message(screen, "Game Over!", (255, 0, 0))  # Hiển thị thông báo thua
+            pygame.display.flip()
+            pygame.time.wait(2000)  # Chờ 2 giây
+            running = False  # Thoát vòng lặp để quay lại menu
             pygame.mixer.music.pause()
-            # if sound_not_played2:
-            #   #  lose.play(0)
-            #     sound_not_played2 = False
+        
         pygame.display.flip()
+    
+    # Sau khi thoát vòng lặp (thắng hoặc thua), quay lại menu
+    load_menu()

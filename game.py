@@ -1,7 +1,9 @@
 import pygame
+import math
 from utils import find_direction
 
 from characters import Pacman, Red, Pink, Blue, Orange, Point
+
 
 
 class Game:
@@ -11,7 +13,7 @@ class Game:
             self.ghosts = ghosts
             self.score = 0
             self.points = [Point(pos) for pos in points_positions] if points_positions else []
-
+            self.pink_next_moves = []  # Khai báo như thuộc tính của lớp
         
     def render(self, screen):
         self.labyrinth.render(screen)
@@ -46,6 +48,7 @@ class Game:
         if self.pacman.get_curr_dir() == 'down': next_y += 1
         if self.pacman.get_curr_dir() == 'right': next_x += 1
         if self.pacman.get_curr_dir() == 'left': next_x -= 1
+        
         if self.labyrinth.is_free((next_x, next_y)):
             self.pacman.set_position((next_x, next_y))
 
@@ -55,27 +58,32 @@ class Game:
                     point.eaten = True
                     self.score += 10
 
+
+
     def get_ghost_position(self):
         return [ghost.get_position() for ghost in self.ghosts]
-
+    def distance(self, pacman, ghost):
+        x1, y1 = pacman.get_position()
+        x2, y2 = ghost.get_position()
+        return math.sqrt((x1 - x2)**2) + ((y1 - y2)**2) // 1
     def move_ghosts(self):
-
-
         for i, ghost in enumerate(self.ghosts):
             ghost_positions = self.get_ghost_position()
             target = self.pacman.get_position()
             start = ghost.get_position()
             ghost_type = type(ghost)
-
-            ghost_type = type(ghost)
+            
             if ghost_type == Blue:
-                next_position = self.labyrinth.bfs(start, target, ghost.get_direction())
+                next_position = self.labyrinth.bfs(start, target)
             elif ghost_type == Pink:
-                next_position = self.labyrinth.ids(start, target, ghost.get_direction())
+                if len(self.pink_next_moves) == 0:
+                    self.pink_next_moves = self.labyrinth.ids(start, target, self.distance(self.pacman, ghost))
+                print("Pink Ghost Next Moves:", self.pink_next_moves, " with len: ", len(self.pink_next_moves))
+                next_position = self.pink_next_moves.pop(0)
             elif ghost_type == Orange:
-                next_position = self.labyrinth.ucs(start, target, ghost.get_direction())
+                next_position = self.labyrinth.ucs(start, target)
             elif ghost_type == Red:
-                next_position = self.labyrinth.a_star(start, target, ghost.get_direction())
+                next_position = self.labyrinth.a_star(start, target)
 
             other_ghost_positions = [pos for j, pos in enumerate(ghost_positions) if j != i]
             if next_position not in other_ghost_positions:
@@ -83,14 +91,7 @@ class Game:
                 ghost.set_direction(find_direction(ghost.get_position(), next_position))
                 ghost.set_position(next_position)
                 ghost.update_image()
-
-
-
         self.pacman.update_image()
-        #     ghost.set_direction(find_direction(ghost.get_position(), next_position))
-        #     ghost.set_position(next_position)
-        #     ghost.update_image()
-        # self.pacman.update_image()
 
     def check_win(self):
         return not self.check_lose() and self.labyrinth.get_tile_id(self.pacman.get_position()) == self.labyrinth.finish_tile
