@@ -3,7 +3,7 @@ import pygame
 pygame.init()
 
 # SIZE
-MENU_SIZE = 800, 600
+MENU_SIZE = 800,600
 WINDOW_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 800, 600
 TILE_SIZE = 18
 

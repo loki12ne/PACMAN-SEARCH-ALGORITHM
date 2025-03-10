@@ -1,5 +1,5 @@
 import pygame
-from constants import TILE_SIZE, GAME_EVENT_TYPE
+from constants import TILE_SIZE, GAME_EVENT_TYPE, WINDOW_SIZE
 
 class Pacman:
     def __init__(self, position):
@@ -188,7 +188,7 @@ class Point:
 
 
 class Score:
-    def __init__(self, x= 10, y=10, font_size=30, color=(255, 255, 255)):
+    def __init__(self, x= 10, y=10, font_size=36, color=(255, 255, 255)):
         self.score = 0
         self.font = pygame.font.Font(None, font_size)
         self.color = color
@@ -201,5 +201,6 @@ class Score:
 
     def render(self, screen):
         """Hiển thị điểm số trên màn hình."""
-        text = self.font.render(f"Score: {self.score}", True, self.color)
-        screen.blit(text, (self.x, self.y))
+        score_text = self.font.render(str(self.score), True, self.color)
+        screen.blit(score_text, (WINDOW_SIZE[0] - 230 + 230 * 0.2, 144 + 105 * 0.6))  # Đặt text vào khung
+
