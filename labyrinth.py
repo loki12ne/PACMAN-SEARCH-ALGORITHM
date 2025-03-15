@@ -125,7 +125,6 @@ class Labyrinth:
                     result = dls(next_pos, target, depth, path + [next_pos], visited)
                     if result:  # Nếu tìm thấy đường, trả về ngay
                         return result
-                    visited.remove(next_pos)
             return None  # Không tìm thấy đường trong depth này
 
         max_depth = self.width * self.height
