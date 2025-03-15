@@ -142,7 +142,7 @@ class Labyrinth:
                     return [result[1]] if len(result) > 1 else [start]  # Trả về toàn bộ bước trừ start
                 else:
                     mid_index = int(length_path // 2)
-                    next_steps = result[1:] if len(result) > 1 else [start]
+                    next_steps = result[1:mid_index] if len(result) > 1 else [start]
                     return next_steps if len(next_steps) > 0 else [start]  # Chọn phần giữa đường đi
 
         if track_stats:
