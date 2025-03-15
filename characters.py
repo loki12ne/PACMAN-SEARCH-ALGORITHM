@@ -1,12 +1,12 @@
 import pygame
-from constants import TILE_SIZE, GAME_EVENT_TYPE, WINDOW_SIZE
+from constants import TILE_SIZE, GAME_EVENT_TYPE, WINDOW_SIZE, ORANGE_EVENT_TYPE
 
 class Pacman:
     def __init__(self, position):
         self.next_direction = ''
         self.current_direction = 'left'
         self.x, self.y = position
-        self.delay = 100
+        self.delay = 150
         self.image = pygame.image.load(f'characters/pacman/{self.current_direction}1.png')
         self.image1 = pygame.transform.scale(self.image, (18, 18))
         self.count = 0
@@ -111,7 +111,7 @@ class Blue:
     def __init__(self, position):
         self.direction = 'up'
         self.x, self.y = position
-        self.delay = 100
+        self.delay = 200
         self.image = pygame.image.load(f'characters/blue/{self.direction}1.png')
         self.image1 = pygame.transform.scale(self.image, (18, 18))
         self.count = 0
@@ -145,10 +145,11 @@ class Orange:
         self.direction = 'up'
         self.x, self.y = position
         self.delay = 200
+        self.prev_direction = None  #phuc vu cho cai ucs
         self.image = pygame.image.load(f'characters/orange/{self.direction}1.png')
         self.image1 = pygame.transform.scale(self.image, (18, 18))
         self.count = 0
-        pygame.time.set_timer(GAME_EVENT_TYPE, self.delay)
+        pygame.time.set_timer(ORANGE_EVENT_TYPE, self.delay)
 
     def get_position(self):
         return self.x, self.y
@@ -160,6 +161,15 @@ class Orange:
         return self.direction
 
     def set_direction(self, direction):
+        if self.prev_direction is not None:  # Từ lần di chuyển thứ 2 trở đi
+            if direction == self.prev_direction:  # Đi thẳng
+                self.delay = int(self.delay * 0.9)  # Giảm delay (tăng tốc độ)
+            else:  
+                self.delay = 250  
+            # Giới hạn delay để tránh giá trị quá nhỏ hoặc quá lớn
+            self.delay = max(self.delay, 125)
+            pygame.time.set_timer(ORANGE_EVENT_TYPE, self.delay)  
+        self.prev_direction = self.direction  
         self.direction = direction
 
     def update_image(self):

@@ -15,3 +15,5 @@ PACMAN_EVENT = pygame.USEREVENT + 2
 pygame.time.set_timer(PACMAN_EVENT, 135)
 
 SONG_END = pygame.USEREVENT + 3
+
+ORANGE_EVENT_TYPE = pygame.USEREVENT + 4 # dac biet cho con orange

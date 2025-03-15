@@ -3,9 +3,10 @@ import math
 from utils import find_direction
 
 from characters import Pacman, Red, Pink, Blue, Orange, Point, Score
+from labyrinth import total_stats
 
 class Game:
-    def __init__(self, labyrinth, pacman, ghosts, points_positions=None):
+    def __init__(self, labyrinth, pacman, ghosts, research = False):
             self.labyrinth = labyrinth
             self.pacman = pacman
             self.ghosts = ghosts
@@ -13,6 +14,15 @@ class Game:
             points_positions = self.get_points_positions()
             self.points = [Point(pos) for pos in points_positions] if points_positions else []
             self.pink_next_moves = []  # Khai báo như thuộc tính của lớp
+
+            self.research = research
+            # Khởi tạo quản lý âm thanh ăn điểm
+            self.eating_sound = pygame.mixer.Sound("UI/sound/point_eaten.mp3")
+            self.eating_sound.set_volume(0.5)
+            self.sound_playing = False  # Trạng thái âm thanh đang phát hay không
+            self.sound_timer = 0  # Bộ đếm thời gian để kiểm soát thời gian phát
+            self.sound_duration = 400  # Thời gian phát âm thanh (miligiây), điều chỉnh theo ý muốn
+
     def get_points_positions(self):
         points = []  
         with open("maps/point.txt", 'r') as file:
@@ -66,8 +76,17 @@ class Game:
                 if not point.eaten and point.get_position() == pacman_pos:
                     point.eaten = True
                     self.score.increase(10)
+                    if not self.sound_playing:
+                        self.eating_sound.play(0)  # Phát âm thanh
+                        self.sound_playing = True
+                        self.sound_timer = pygame.time.get_ticks()  # Lấy thời gian hiện tại
+                        
 
-
+        # Cập nhật trạng thái âm thanh
+        if self.sound_playing:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.sound_timer >= self.sound_duration:
+                self.sound_playing = False  # Đặt lại trạng thái khi âm thanh kết thúc
 
     def get_ghost_position(self):
         return [ghost.get_position() for ghost in self.ghosts]
@@ -83,26 +102,52 @@ class Game:
             ghost_type = type(ghost)
             
             if ghost_type == Blue:
-                next_position = self.labyrinth.bfs(start, target)
+                next_position = self.labyrinth.bfs(start, target, track_stats=self.research )
             elif ghost_type == Pink:
                 if len(self.pink_next_moves) == 0:
-                    self.pink_next_moves = self.labyrinth.ids(start, target, self.distance(self.pacman, ghost))
+                    self.pink_next_moves = self.labyrinth.ids(start, target, track_stats=self.research )
                 next_position = self.pink_next_moves.pop(0)
-            elif ghost_type == Orange:
-                next_position = self.labyrinth.ucs(start, target)
+            # elif ghost_type == Orange:
+            #     next_position = self.labyrinth.ucs(start, target)
             elif ghost_type == Red:
-                next_position = self.labyrinth.a_star(start, target)
+                next_position = self.labyrinth.a_star(start, target, track_stats=self.research)
+            else:
+                continue
 
             other_ghost_positions = [pos for j, pos in enumerate(ghost_positions) if j != i]
             if next_position not in other_ghost_positions:
-            # Nếu không có đụng độ, cập nhật hướng và vị trí
                 ghost.set_direction(find_direction(ghost.get_position(), next_position))
                 ghost.set_position(next_position)
                 ghost.update_image()
         self.pacman.update_image()
 
+    def move_orange(self):
+            for i, ghost in enumerate(self.ghosts):
+                if type(ghost) == Orange:
+                    ghost_positions = self.get_ghost_position()
+                    target = self.pacman.get_position()
+                    start = ghost.get_position()
+                    other_ghost_positions = [pos for j, pos in enumerate(ghost_positions) if j != i]
+                    next_position = self.labyrinth.ucs(start, target, other_ghost_positions, track_stats=self.research )
+                    if next_position not in other_ghost_positions:
+                        ghost.set_direction(find_direction(ghost.get_position(), next_position))
+                        ghost.set_position(next_position)
+                        ghost.update_image()
+                    break
+
+
+
     def check_win(self):
         return not self.check_lose() and self.labyrinth.get_tile_id(self.pacman.get_position()) == self.labyrinth.finish_tile
 
     def check_lose(self):
-        return any(self.pacman.get_position() == ghost.get_position() for ghost in self.ghosts)
+        global total_stats
+        if(any(self.pacman.get_position() == ghost.get_position() for ghost in self.ghosts)):
+            print("Total stats:", total_stats)
+            total_stats['time'] = 0
+            total_stats['memory'] = 0
+            total_stats['nodes'] = 0
+            total_stats['time_peak'] = 0
+            total_stats['memory_peak'] = 0
+            return True
+        return False

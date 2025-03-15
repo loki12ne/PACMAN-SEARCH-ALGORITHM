@@ -4,7 +4,7 @@ import pygame_gui
 from labyrinth import Labyrinth
 from game import Game
 from utils import terminate, show_message
-from constants import MENU_SIZE, WINDOW_SIZE, SONG_END, GAME_EVENT_TYPE, PACMAN_EVENT
+from constants import MENU_SIZE, WINDOW_SIZE, SONG_END, GAME_EVENT_TYPE, PACMAN_EVENT, ORANGE_EVENT_TYPE
 from characters import Pacman, Red, Blue, Pink, Orange
 
 def load_menu():
@@ -200,12 +200,34 @@ def start_game(mode):
     
     labyrinth = Labyrinth(map, [0, 2], 2)
     pacman = Pacman((1,30))
-    red = Red((14,15))
-    blue = Blue((14,15))
-    orange = Orange((14,15))
-    pink = Pink((14,15))
+
+    # test case A: 14,15 B: 15,21 C: 1,2 D:26,30 E: 26,2
+    test_case = 'E'
+    if(test_case == 'A'):
+        px = 14
+        py = 15
+    elif(test_case == 'B'):
+        px = 15
+        py = 21
+    elif(test_case == 'C'):
+        px = 1
+        py = 2
+    elif(test_case == 'D'):
+        px = 26
+        py = 30
+    elif(test_case == 'E'):
+        px = 26
+        py = 2
+
+
+    red = Red((px,py))
+    blue = Blue((px,py))
+    orange = Orange((px,py))
+    pink = Pink((px,py))
 
     ghost = []
+
+    research = True
 
     if mode == 1:
         ghost.append(blue)
@@ -216,6 +238,7 @@ def start_game(mode):
     elif mode == 4:
         ghost.append(red)
     elif mode == 5:
+        research = False
         red = Red((14,15))
         blue = Blue((13,15))
         orange = Orange((12,15))
@@ -226,7 +249,7 @@ def start_game(mode):
         ghost.append(pink)
 
 
-    game = Game(labyrinth, pacman, ghost)  # Khởi tạo
+    game = Game(labyrinth, pacman, ghost, research)  # Khởi tạo
 
     clock = pygame.time.Clock()
     running = True
@@ -247,6 +270,8 @@ def start_game(mode):
                 pygame.mixer.music.play(-1)
             elif event.type == GAME_EVENT_TYPE and not game_over and game_start:
                 game.move_ghosts()
+            elif event.type == ORANGE_EVENT_TYPE and not game_over and game_start:
+                game.move_orange()  # Di chuyển riêng Orange
             elif event.type == PACMAN_EVENT and not game_over and game_start:
                 game.update_direct_pacman()
             manager.process_events(event)
@@ -272,7 +297,7 @@ def start_game(mode):
             screen.blit(win, win_rect.topleft)
 
             pygame.display.flip()
-            pygame.time.wait(2000)  # Chờ 2 giây
+            pygame.time.wait(3000)  # Chờ 2 giây
             running = False  # Thoát vòng lặp để quay lại menu
         
         if game.check_lose():
