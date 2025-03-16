@@ -3,11 +3,12 @@ import pygame_gui
 
 from labyrinth import Labyrinth
 from game import Game
-from utils import terminate, show_message
+from utils import terminate
 from constants import MENU_SIZE, WINDOW_SIZE, SONG_END, GAME_EVENT_TYPE, PACMAN_EVENT, ORANGE_EVENT_TYPE
 from characters import Pacman, Red, Blue, Pink, Orange
 
 def load_menu():
+    """Initialize and display the Pacman level selection menu with interactive buttons and music."""
     pygame.init()
     pygame.mixer.init()
     pygame.display.set_caption('Pacman Levels')
@@ -15,111 +16,72 @@ def load_menu():
     screen = pygame.display.set_mode(MENU_SIZE)
     screen.fill((0, 0, 0))
 
-    # Load nhạc nền
-    pygame.mixer.music.load("UI/sound/bg_music.mp3")  # Thay bằng file của bạn
-    pygame.mixer.music.set_volume(0.5)  # Điều chỉnh âm lượng (0.0 - 1.0)
-    pygame.mixer.music.play(-1)  # Lặp vô hạn
+    # Load and play background music
+    pygame.mixer.music.load("UI/sound/bg_music.mp3")
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
     music_playing = True
 
-    # Load âm thanh khi hover
     hover_sound = pygame.mixer.Sound("UI/sound/button.mp3")
-    hover_sound.set_volume(0.7)  # Điều chỉnh âm lượng
+    hover_sound.set_volume(0.7)
 
-    # # Tạo UIButton có hình ảnh
-    # music_panel = pygame_gui.elements.UIPanel(
-    #     relative_rect=pygame.Rect((20, MENU_SIZE[1] - 60), (60, 40)), 
-    #     manager=manager
-    # )
-    # music_button = pygame_gui.elements.UIImage(
-    #     relative_rect=pygame.Rect((20, MENU_SIZE[1] - 60), (60, 40)), 
-    #     image_surface=music_on_img, 
-    #     manager=manager
-    # )
-
-    #Vẽ logo
+    # Load and scale logo
     logo = pygame.image.load("UI/logo.png")
     logo = pygame.transform.scale(logo, (600, 320))
-    relative_rect = pygame.Rect(((WINDOW_SIZE[0] - 600) * 0.5, 0), (600, 320))
+    logo_rect = pygame.Rect(((WINDOW_SIZE[0] - 600) * 0.5, 0), (600, 320))
 
     buttons = []
     button_images = []
 
+    # Create level buttons (1-5)
     for i in range(5):
-        normal_image = pygame.image.load(f"UI/level{i + 1}.png")  
-        hover_image = pygame.image.load(f"UI/level{i + 1}_hover.png")  
+        normal_image = pygame.transform.scale(pygame.image.load(f"UI/level{i + 1}.png"), (168, 60))
+        hover_image = pygame.transform.scale(pygame.image.load(f"UI/level{i + 1}_hover.png"), (168, 60))
 
-        normal_image = pygame.transform.scale(normal_image, (168, 60))
-        hover_image = pygame.transform.scale(hover_image, (168, 60))
-        #còn: 0.3, size button, size panel chưa define
-        #Tạo Panel
-        if (i < 3):
-            button_panel = pygame_gui.elements.UIPanel(
-                relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 - (160 + 10), WINDOW_SIZE[1] * 0.4 + i * (20 + 50 + 10)), (160, 50)), 
-                manager=manager
-            )
-        else:
-            button_panel = pygame_gui.elements.UIPanel(
-                relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 10, WINDOW_SIZE[1] * 0.4 + (i - 3) * (20 + 50 + 10)), (160, 50)), 
-                manager=manager
-            )
+        x_pos = WINDOW_SIZE[0] * 0.5 - (168 + 10) if i < 3 else WINDOW_SIZE[0] * 0.5 + 10
+        y_pos = WINDOW_SIZE[1] * 0.4 + (i * (20 + 50 + 10) if i < 3 else (i - 3) * (20 + 50 + 10))
 
-        #Tạo ảnh
-        if (i < 3):
-            button_image = pygame_gui.elements.UIImage(
-                relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 - (168 + 10), WINDOW_SIZE[1] * 0.4 + i * (20 + 50 + 10)), (168, 60)), 
-                image_surface=normal_image, 
-                manager=manager
-            )
-        else:
-            button_image = pygame_gui.elements.UIImage(
-                relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 10, WINDOW_SIZE[1] * 0.4 + (i - 3) * (20 + 50 + 10)), (168, 60)), 
-                image_surface=normal_image, 
-                manager=manager
-            )
-
+        button_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect((x_pos + 8, y_pos + 10), (160, 50)), 
+            manager=manager
+        )
+        button_image = pygame_gui.elements.UIImage(
+            relative_rect=pygame.Rect((x_pos, y_pos), (168, 60)), 
+            image_surface=normal_image, 
+            manager=manager
+        )
         button_images.append((button_panel, button_image, normal_image, hover_image))
         buttons.append(button_panel)
 
-    #them nut exit
-    normal_image = pygame.image.load(f"UI/exit.png")  
-    hover_image = pygame.image.load(f"UI/exit_hover.png")  
-
-    normal_image = pygame.transform.scale(normal_image, (168, 60))
-    hover_image = pygame.transform.scale(hover_image, (168, 60))
-
-    button_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 10, WINDOW_SIZE[1] * 0.4 + 2 * (20 + 50 + 10)), (160, 50)), 
-            manager=manager
+    # Add exit button
+    normal_image = pygame.transform.scale(pygame.image.load("UI/exit.png"), (168, 60))
+    hover_image = pygame.transform.scale(pygame.image.load("UI/exit_hover.png"), (168, 60))
+    exit_panel = pygame_gui.elements.UIPanel(
+        relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 18, WINDOW_SIZE[1] * 0.4 + 2 * (20 + 50 + 10)), (160, 50)), 
+        manager=manager
     )
-    button_image = pygame_gui.elements.UIImage(
-            relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 10, WINDOW_SIZE[1] * 0.4 + 2 * (20 + 50 + 10)), (168, 60)), 
-            image_surface=normal_image, 
-            manager=manager
+    exit_image = pygame_gui.elements.UIImage(
+        relative_rect=pygame.Rect((WINDOW_SIZE[0] * 0.5 + 10, WINDOW_SIZE[1] * 0.4 + 2 * (20 + 50 + 10)), (168, 60)), 
+        image_surface=normal_image, 
+        manager=manager
     )
+    button_images.append((exit_panel, exit_image, normal_image, hover_image))
+    buttons.append(exit_panel)
 
-    button_images.append((button_panel, button_image, normal_image, hover_image))
-    buttons.append(button_panel)
-
-    # Vẽ nút bật/tắt nhạc
-    music_on_img = pygame.image.load("UI/sound_on.png")
-    music_off_img = pygame.image.load("UI/sound_off.png")
-
-    music_on_img = pygame.transform.scale(music_on_img, (60, 40))
-    music_off_img = pygame.transform.scale(music_off_img, (60, 40))
-
+    # Add music toggle button
+    music_on_img = pygame.transform.scale(pygame.image.load("UI/sound_on.png"), (60, 40))
+    music_off_img = pygame.transform.scale(pygame.image.load("UI/sound_off.png"), (60, 40))
     music_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((19, MENU_SIZE[1] - 50), (20, 20)),
-            manager=manager
+        relative_rect=pygame.Rect((19, MENU_SIZE[1] - 50), (20, 20)),
+        manager=manager
     )
     music_image = pygame_gui.elements.UIImage(
-            relative_rect=pygame.Rect((20, MENU_SIZE[1] - 60), (60, 40)),
-            image_surface=music_on_img, 
-            manager=manager
+        relative_rect=pygame.Rect((20, MENU_SIZE[1] - 60), (60, 40)),
+        image_surface=music_on_img, 
+        manager=manager
     )
-
     button_images.append((music_panel, music_image, music_on_img, music_off_img))
     buttons.append(music_panel)
-
 
     running = True
     clock = pygame.time.Clock()
@@ -134,40 +96,29 @@ def load_menu():
                 for i, button in enumerate(buttons):
                     if button.relative_rect.collidepoint(mouse_pos):
                         hover_sound.play()
-                        if i < 5:
+                        if i < 5:  # Level buttons
                             start_game(i + 1)
                             running = False
-                        elif i == 5:
+                        elif i == 5:  # Exit button
                             terminate()
-                        elif i == 6:
+                        elif i == 6:  # Music toggle
                             if music_playing:
-                                pygame.mixer.music.pause()  # Dừng nhạc
+                                pygame.mixer.music.pause()
                             else:
-                                pygame.mixer.music.unpause()  # Bật lại nhạc
-                            # Xóa ảnh cũ bằng cách vẽ lại nền
-                            panel_x, panel_y = music_panel.relative_rect.topleft
-                            button_x, button_y = music_image.relative_rect.topleft
-                            pygame.draw.rect(screen, (0, 0, 0), (panel_x + button_x, panel_y + button_y, 60, 40))
-
-                            # Đổi hình ảnh
+                                pygame.mixer.music.unpause()
                             music_image.set_image(music_off_img if music_playing else music_on_img)
-
-                            # Đảo trạng thái nhạc
                             music_playing = not music_playing
                         break
 
             manager.process_events(event)
 
-
+        # Update button hover effects
         for button, image_element, normal, hover in button_images[:6]:
-            if button.relative_rect.collidepoint(mouse_pos):
-                image_element.set_image(hover)
-            else:
-                image_element.set_image(normal)
+            image_element.set_image(hover if button.relative_rect.collidepoint(mouse_pos) else normal)
 
         manager.update(time_delta)
         screen.fill((0, 0, 0))
-        screen.blit(logo, relative_rect.topleft)
+        screen.blit(logo, logo_rect.topleft)
         manager.draw_ui(screen)
         pygame.display.flip()
 
@@ -202,7 +153,7 @@ def start_game(mode):
     pacman = Pacman((1,30))
 
     # test case A: 14,15 B: 15,21 C: 1,2 D:26,30 E: 26,2
-    test_case = 'E'
+    test_case = 'A'
     if(test_case == 'A'):
         px = 14
         py = 15
