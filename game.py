@@ -91,12 +91,6 @@ class Game:
         """Return list of all ghost positions."""
         return [ghost.get_position() for ghost in self.ghosts]
 
-    def distance(self, pacman, ghost):
-        """Calculate Euclidean distance between Pacman and a ghost."""
-        x1, y1 = pacman.get_position()
-        x2, y2 = ghost.get_position()
-        return math.sqrt((x1 - x2)**2 + (y1 - y2)**2) // 1
-
     def move_ghosts(self):
         """Move all ghosts except Orange using respective algorithms."""
         for i, ghost in enumerate(self.ghosts):
