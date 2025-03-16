@@ -124,62 +124,54 @@ def load_menu():
 
     pygame.quit()
 
+import pygame
+import pygame_gui
+
 def start_game(mode):
+    """
+    Initializes and starts the Pacman game.
+
+    Args:
+        mode (int): The game mode (level) that determines the ghost behavior.
+    """
     pygame.init()
     pygame.display.set_caption(f'Pacman Level {mode}')
     screen = pygame.display.set_mode(WINDOW_SIZE)
     manager = pygame_gui.UIManager(WINDOW_SIZE)
 
+    # Play starting sound
     pygame.mixer.music.set_volume(0.3)
     starting_sound = pygame.mixer.Sound("UI/sound/starting.mp3")
-    starting_sound.set_volume(0.7)  # Điều chỉnh âm lượng
+    starting_sound.set_volume(0.7)
     starting_sound.play(0)
 
-    logo = pygame.image.load("UI/logo.png")
-    logo = pygame.transform.scale(logo, (270, 144))
+    # Load UI elements
+    logo = pygame.transform.scale(pygame.image.load("UI/logo.png"), (270, 144))
     logo_rect = pygame.Rect((WINDOW_SIZE[0] - 270, 0), (270, 144))
 
-    # Vẽ khung score
-    scrore_board = pygame.image.load("UI/score.png")
-    scrore_board = pygame.transform.scale(scrore_board, (180, 105))
-    scrore_board_rect = pygame.Rect((WINDOW_SIZE[0] - 230, 144), (180, 105))
-    # score_rect = pygame.Rect(WINDOW_SIZE[0] - 270, 150, 150, 50)  # Khung điểm số (tọa độ x, y, rộng, cao)
-    # pygame.draw.rect(screen, (255, 255, 255), score_rect, border_radius=10)  # Viền trắng
-    # pygame.draw.rect(screen, (0, 0, 0), score_rect.inflate(-4, -4))  # Khung đen bên trong
-    # Hiển thị điểm số
+    score_board = pygame.transform.scale(pygame.image.load("UI/score.png"), (180, 105))
+    score_board_rect = pygame.Rect((WINDOW_SIZE[0] - 230, 144), (180, 105))
 
-    
+    # Initialize game objects
     labyrinth = Labyrinth(map, [0, 2], 2)
-    pacman = Pacman((1,30))
+    pacman = Pacman((1, 30))
 
-    # test case A: 14,15 B: 15,21 C: 1,2 D:26,30 E: 26,2
-    test_case = 'A'
-    if(test_case == 'A'):
-        px = 14
-        py = 15
-    elif(test_case == 'B'):
-        px = 15
-        py = 21
-    elif(test_case == 'C'):
-        px = 1
-        py = 2
-    elif(test_case == 'D'):
-        px = 26
-        py = 30
-    elif(test_case == 'E'):
-        px = 26
-        py = 2
+    # Define test cases for ghost positions
+    test_cases = {
+        'A': (14, 15),
+        'B': (15, 21),
+        'C': (1, 2),
+        'D': (26, 30),
+        'E': (26, 2)
+    }
+    px, py = test_cases.get('A', (14, 15))  # Default to 'A'
 
-
-    red = Red((px,py))
-    blue = Blue((px,py))
-    orange = Orange((px,py))
-    pink = Pink((px,py))
-
+    # Initialize ghosts
+    red, blue, orange, pink = Red((px, py)), Blue((px, py)), Orange((px, py)), Pink((px, py))
     ghost = []
-
     research = True
 
+    # Assign ghosts based on mode
     if mode == 1:
         ghost.append(blue)
     elif mode == 2:
@@ -190,29 +182,22 @@ def start_game(mode):
         ghost.append(red)
     elif mode == 5:
         research = False
-        red = Red((14,15))
-        blue = Blue((13,15))
-        orange = Orange((12,15))
-        pink = Pink((15,15))
-        ghost.append(blue)
-        ghost.append(red)
-        ghost.append(orange)
-        ghost.append(pink)
+        red, blue, orange, pink = Red((14, 15)), Blue((13, 15)), Orange((12, 15)), Pink((15, 15))
+        ghost.extend([blue, red, orange, pink])
 
-
-    game = Game(labyrinth, pacman, ghost, research)  # Khởi tạo
+    game = Game(labyrinth, pacman, ghost, research)
 
     clock = pygame.time.Clock()
-    running = True
-    game_over = False
-    game_start = False
-    game_start_time = pygame.time.get_ticks() + 4500
-    
+    running, game_over, game_start = True, False, False
+    game_start_time = pygame.time.get_ticks() + 4500  # 4.5s delay before game starts
+
     while running:
         current_time = pygame.time.get_ticks()
         time_delta = clock.tick(60) / 1000.0
+
         if current_time > game_start_time:
             game_start = True
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -222,52 +207,50 @@ def start_game(mode):
             elif event.type == GAME_EVENT_TYPE and not game_over and game_start:
                 game.move_ghosts()
             elif event.type == ORANGE_EVENT_TYPE and not game_over and game_start:
-                game.move_orange()  # Di chuyển riêng Orange
+                game.move_orange()
             elif event.type == PACMAN_EVENT and not game_over and game_start:
                 game.update_direct_pacman()
             manager.process_events(event)
-        
+
         game.direct_pacman()
         screen.fill((0, 0, 0))
         game.render(screen)
         screen.blit(logo, logo_rect.topleft)
-        screen.blit(scrore_board, scrore_board_rect.topleft)
+        screen.blit(score_board, score_board_rect.topleft)
         pygame.draw.line(screen, (255, 215, 0), (WINDOW_SIZE[0] - 280, 0), (WINDOW_SIZE[0] - 280, WINDOW_SIZE[1]), 4)
         manager.update(time_delta)
         manager.draw_ui(screen)
-        
+
+        # Check game status (Win/Lose)
         if game.check_win():
-            #Âm thanh:
             pygame.mixer.music.pause()
             winning_sound = pygame.mixer.Sound("UI/sound/mom_i_did_it.mp3")
-            winning_sound.set_volume(0.7)  # Điều chỉnh âm lượng
+            winning_sound.set_volume(0.7)
             winning_sound.play(0)
-            # Hiển thị thông báo thắng
-            win = pygame.transform.scale(pygame.image.load("UI/win.png"), (470, 300))
-            win_rect = pygame.Rect(((WINDOW_SIZE[0] - 470) * 0.5 , (WINDOW_SIZE[1] - 300) * 0.5), (470, 300))
-            screen.blit(win, win_rect.topleft)
+
+            win_image = pygame.transform.scale(pygame.image.load("UI/win.png"), (470, 300))
+            win_rect = pygame.Rect(((WINDOW_SIZE[0] - 470) * 0.5, (WINDOW_SIZE[1] - 300) * 0.5), (470, 300))
+            screen.blit(win_image, win_rect.topleft)
 
             pygame.display.flip()
-            pygame.time.wait(3000)  # Chờ 2 giây
-            running = False  # Thoát vòng lặp để quay lại menu
-        
+            pygame.time.wait(3000)
+            running = False
+
         if game.check_lose():
-            #Âm thanh:
             pygame.mixer.music.pause()
             dying_sound = pygame.mixer.Sound("UI/sound/dying.mp3")
-            dying_sound.set_volume(0.7)  # Điều chỉnh âm lượng
+            dying_sound.set_volume(0.7)
             dying_sound.play(0)
-            # Hiển thị thông báo thua
-            lose = pygame.transform.scale(pygame.image.load("UI/lose.png"), (470, 300))
-            lose_rect = pygame.Rect(((WINDOW_SIZE[0] - 470) * 0.5 , (WINDOW_SIZE[1] - 300) * 0.5), (470, 300))
-            screen.blit(lose, lose_rect.topleft)
+
+            lose_image = pygame.transform.scale(pygame.image.load("UI/lose.png"), (470, 300))
+            lose_rect = pygame.Rect(((WINDOW_SIZE[0] - 470) * 0.5, (WINDOW_SIZE[1] - 300) * 0.5), (470, 300))
+            screen.blit(lose_image, lose_rect.topleft)
 
             pygame.display.flip()
-            pygame.time.wait(2000)  # Chờ 2 giây
-            running = False  # Thoát vòng lặp để quay lại menu
+            pygame.time.wait(2000)
+            running = False
             pygame.mixer.music.pause()
-        
+
         pygame.display.flip()
-    
-    # Sau khi thoát vòng lặp (thắng hoặc thua), quay lại menu
+
     load_menu()
