@@ -2,7 +2,7 @@
 
 ### CÁCH 1:
 1. Mở file `main.py`.
-2. Chọn **Run and Debug** trong môi trường lập trình (IDE).
+2. Chọn **Run and Debug** trong môi trường lập trình.
 
 ### CÁCH 2:
 - Sử dụng câu lệnh sau trong terminal hoặc command prompt:
